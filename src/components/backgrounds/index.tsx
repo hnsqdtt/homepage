@@ -48,8 +48,11 @@ const engines: Record<string, (p: Record<string, unknown>) => EngineStyles> = {
 
 export function BackgroundRenderer({
   background,
+  fixed = true,
 }: {
   background: HomepageConfig["background"];
+  /** 游客端 fixed 全屏;编辑器画布传 false,以 absolute 限定在画布内(外层需 relative + isolate) */
+  fixed?: boolean;
 }) {
   const render = engines[background.engine];
   const styles = render ? render(background.params) : null;
@@ -57,7 +60,7 @@ export function BackgroundRenderer({
   return (
     <div
       aria-hidden
-      className={`fixed inset-0 -z-10 ${background.disableOnMobile ? "max-md:hidden" : ""}`}
+      className={`${fixed ? "fixed" : "absolute"} inset-0 -z-10 ${background.disableOnMobile ? "max-md:hidden" : ""}`}
     >
       <div className="absolute inset-0 dark:hidden" style={styles.light} />
       <div className="absolute inset-0 hidden dark:block" style={styles.dark} />

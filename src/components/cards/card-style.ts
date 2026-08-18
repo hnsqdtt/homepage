@@ -30,13 +30,14 @@ export function overrideVars(o?: StyleOverride): CSSProperties {
   return s as CSSProperties;
 }
 
-/** 卡面质感与阴影:data 属性驱动(见 globals.css .card-surface) */
+/** 卡面质感/阴影/悬停:data 属性驱动,单卡覆盖优先(见 globals.css .card-surface) */
 export function surfaceAttrs(
   theme: HomepageConfig["theme"],
   o?: StyleOverride,
-): { "data-surface": string; "data-shadow": string } {
+): { "data-surface": string; "data-shadow": string; "data-hover": string } {
   return {
     "data-surface": o?.surface ?? theme.card.surface,
     "data-shadow": o?.shadow ?? theme.card.shadow,
+    "data-hover": o?.hover ?? theme.card.hover,
   };
 }

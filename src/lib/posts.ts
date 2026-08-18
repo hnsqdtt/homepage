@@ -25,10 +25,11 @@ function now() {
   return Math.floor(Date.now() / 1000);
 }
 
-/** 文章相关页面的缓存失效:文章页 + 首页 + feed + sitemap */
-function revalidatePost(slugs: string[]) {
+/** 文章相关页面的缓存失效:文章页 + 首页 + 全部文章 + feed + sitemap */
+export function revalidatePost(slugs: string[]) {
   for (const slug of slugs) revalidatePath(`/posts/${slug}`);
   revalidatePath("/");
+  revalidatePath("/posts");
   revalidatePath("/feed.xml");
   revalidatePath("/sitemap.xml");
 }

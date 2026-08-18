@@ -19,6 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function HomePage() {
   const data = buildHomepageData();
+  const site = getSiteSettings();
   const { config } = data;
   return (
     <>
@@ -28,18 +29,7 @@ export default async function HomePage() {
         <style dangerouslySetInnerHTML={{ __html: config.customCss }} />
       )}
       <div className="px-4 pb-10">
-        {config.searchBox.position === "top" && (
-          <form action="/search" className="mx-auto mb-6 mt-2 w-full max-w-xl">
-            <input
-              type="search"
-              name="q"
-              placeholder="搜索文章…"
-              className="card-surface w-full px-4 py-2.5 text-sm outline-none"
-              data-shadow="soft"
-            />
-          </form>
-        )}
-        <CardWall data={data} />
+        <CardWall data={data} site={site} />
       </div>
     </>
   );

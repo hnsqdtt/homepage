@@ -1,4 +1,4 @@
-// 主页配置方案:更新 / 删除(启用中的方案不可删)。
+// 主页配置方案:读取 / 更新 / 删除(启用中的方案不可删)。
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -11,6 +11,16 @@ export const dynamic = "force-dynamic";
 
 interface Ctx {
   params: Promise<{ id: string }>;
+}
+
+export async function GET(_req: Request, ctx: Ctx) {
+  const { deny } = await requireAdmin();
+  if (deny) return deny;
+  const id = Number((await ctx.params).id);
+  if (!Number.isInteger(id)) return jsonError("参数不合法", 400);
+  const row = db.select().from(homepageConfigs).where(eq(homepageConfigs.id, id)).get();
+  if (!row) return jsonError("方案不存在", 404);
+  return NextResponse.json({ config: row });
 }
 
 export async function PUT(req: Request, ctx: Ctx) {

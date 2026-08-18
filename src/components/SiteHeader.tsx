@@ -1,5 +1,5 @@
-// 站头:站点名 + 导航 + 暗色切换的简单形态(design/09 已拍板)。
-// 显隐与搜索框位置由启用的主页配置驱动,全部 (site) 页面共享。
+// 站头:站点名 + 导航(全部文章)+ 搜索框 + 暗色切换(design/09)。
+// 显隐由启用的主页配置驱动,全部 (site) 页面共享。
 import Link from "next/link";
 import type { HomepageConfig } from "@/lib/homepage-config";
 import type { SiteSettings } from "@/lib/site-settings";
@@ -9,11 +9,9 @@ import UserMenu from "./UserMenu";
 export default function SiteHeader({
   site,
   header,
-  searchInHeader,
 }: {
   site: SiteSettings;
   header: HomepageConfig["header"];
-  searchInHeader: boolean;
 }) {
   if (!header.show) return null;
   return (
@@ -23,16 +21,19 @@ export default function SiteHeader({
       </Link>
       {header.showNav && (
         <nav className="flex items-center gap-4 text-sm" style={{ color: "var(--muted)" }}>
-          <Link href="/search" className="hover:opacity-75">
-            搜索
+          <Link href="/posts" className="hover:opacity-75">
+            全部文章
           </Link>
-          <a href="/feed.xml" className="hover:opacity-75">
-            RSS
-          </a>
+          {/* 窄屏收不下输入框,降级为搜索页链接 */}
+          {header.showSearch && (
+            <Link href="/search" className="hover:opacity-75 sm:hidden">
+              搜索
+            </Link>
+          )}
         </nav>
       )}
       <div className="ml-auto flex items-center gap-3">
-        {searchInHeader && (
+        {header.showSearch && (
           <form action="/search" className="hidden sm:block">
             <input
               type="search"

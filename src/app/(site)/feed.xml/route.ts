@@ -17,6 +17,7 @@ export async function GET() {
   const site = getSiteSettings();
   const items = getPublishedMetaList(50);
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="/feed.xsl"?>
 <rss version="2.0">
 <channel>
   <title>${esc(site.title)}</title>
@@ -36,7 +37,9 @@ ${items
   .join("\n")}
 </channel>
 </rss>`;
+  // application/xml 而非 application/rss+xml:浏览器才会按 XML 文档渲染并应用 feed.xsl,
+  // 订阅器不看这个头(自动发现走 <link type="application/rss+xml">,不受影响)
   return new Response(xml, {
-    headers: { "Content-Type": "application/rss+xml; charset=utf-8" },
+    headers: { "Content-Type": "application/xml; charset=utf-8" },
   });
 }

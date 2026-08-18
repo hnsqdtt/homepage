@@ -1,0 +1,100 @@
+/* react-grid-layout 必需的结构样式(替代其自带 css,按站点主题重调;design/05 编辑器) */
+.react-grid-layout {
+  position: relative;
+  transition: height 200ms ease;
+}
+.react-grid-item {
+  transition: all 200ms ease;
+  transition-property: left, top, width, height;
+}
+.react-grid-item.cssTransforms {
+  transition-property: transform, width, height;
+}
+.react-grid-item.resizing {
+  z-index: 3;
+  will-change: width, height;
+}
+.react-grid-item.react-draggable-dragging {
+  transition: none;
+  z-index: 3;
+  will-change: transform;
+  cursor: grabbing;
+}
+/* 画布悬停提示:描边高亮(缩放会与拖拽定位的 transform 冲突,真实悬停效果看预览) */
+.react-grid-item:hover {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.react-grid-item.react-grid-placeholder {
+  background: var(--accent);
+  opacity: 0.14;
+  border-radius: var(--card-radius, 12px);
+  transition-duration: 100ms;
+  z-index: 2;
+  user-select: none;
+}
+.react-grid-item > .react-resizable-handle {
+  position: absolute;
+  z-index: 4;
+}
+.react-grid-item > .react-resizable-handle:hover {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+/* 四条边:整边可抓的细条(卡片 overflow hidden,条带完全落在边内侧) */
+.react-grid-item > .react-resizable-handle-e {
+  top: 0;
+  right: 0;
+  width: 10px;
+  height: 100%;
+  cursor: ew-resize;
+}
+.react-grid-item > .react-resizable-handle-w {
+  top: 0;
+  left: 0;
+  width: 10px;
+  height: 100%;
+  cursor: ew-resize;
+}
+.react-grid-item > .react-resizable-handle-s {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 10px;
+  cursor: ns-resize;
+}
+.react-grid-item > .react-resizable-handle-n {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 10px;
+  cursor: ns-resize;
+}
+/* 四个角:叠在边条之上的抓角区 */
+.react-grid-item > .react-resizable-handle-nw,
+.react-grid-item > .react-resizable-handle-ne,
+.react-grid-item > .react-resizable-handle-sw,
+.react-grid-item > .react-resizable-handle-se {
+  width: 18px;
+  height: 18px;
+  z-index: 5;
+}
+.react-grid-item > .react-resizable-handle-nw {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+.react-grid-item > .react-resizable-handle-ne {
+  top: 0;
+  right: 0;
+  cursor: nesw-resize;
+}
+.react-grid-item > .react-resizable-handle-sw {
+  bottom: 0;
+  left: 0;
+  cursor: nesw-resize;
+}
+.react-grid-item > .react-resizable-handle-se {
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+}

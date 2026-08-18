@@ -1,11 +1,10 @@
 // 管理台单篇文章:读取 / 更新(全量渲染)/ 硬删。
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
 import { db, posts } from "@/db";
 import { requireAdmin } from "@/lib/admin-guard";
 import { jsonError } from "@/lib/api-utils";
-import { deletePost, postInputSchema, updatePost } from "@/lib/posts";
+import { deletePost, postInputSchema, revalidatePost, updatePost } from "@/lib/posts";
 
 export const dynamic = "force-dynamic";
 
@@ -59,10 +58,7 @@ export async function PATCH(req: Request, ctx: Ctx) {
     .returning({ slug: posts.slug })
     .get();
   if (!row) return jsonError("文章不存在", 404);
-  revalidatePath(`/posts/${row.slug}`);
-  revalidatePath("/");
-  revalidatePath("/feed.xml");
-  revalidatePath("/sitemap.xml");
+  revalidatePost([row.slug]);
   return NextResponse.json({ ok: true });
 }
 

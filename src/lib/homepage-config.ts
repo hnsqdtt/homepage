@@ -11,6 +11,7 @@ export const styleOverrideSchema = z
     radius: z.number().min(0).max(48).optional(),
     borderWidth: z.number().min(0).max(8).optional(),
     shadow: z.enum(["none", "soft"]).optional(),
+    hover: z.enum(["none", "lift"]).optional(),
     titleColor: z.string().optional(),
     titleSize: z.number().min(10).max(48).optional(),
   })
@@ -99,6 +100,8 @@ export const homepageConfigSchema = z.object({
           radius: z.number().min(0).max(48).default(16),
           borderWidth: z.number().min(0).max(8).default(1),
           shadow: z.enum(["none", "soft"]).default("soft"),
+          // 悬停效果:纯 CSS,静态页零成本(design/09)
+          hover: z.enum(["none", "lift"]).default("none"),
         })
         .prefault({}),
       title: z
@@ -113,14 +116,12 @@ export const homepageConfigSchema = z.object({
     })
     .prefault({}),
   background: backgroundSchema.default({ engine: "none", params: {}, dim: 0, disableOnMobile: false }),
-  searchBox: z
-    .object({ position: z.enum(["top", "header", "hidden"]).default("top") })
-    .default({ position: "top" }),
-  // 站头:站点名 + 导航 + 暗色切换的简单形态(原"待定"已拍板,见 design/09)
+  // 站头:站点名 + 导航(全部文章)+ 搜索框 + 暗色切换(design/09)
   header: z
     .object({
       show: z.boolean().default(true),
       showNav: z.boolean().default(true),
+      showSearch: z.boolean().default(true),
       showThemeToggle: z.boolean().default(true),
     })
     .prefault({}),

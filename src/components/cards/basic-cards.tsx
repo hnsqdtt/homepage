@@ -48,6 +48,13 @@ export function ImageCard({
 }: {
   card: Extract<CardConfig, { type: "image" }>;
 }) {
+  if (!card.src) {
+    return (
+      <div className="flex h-full items-center justify-center p-5 text-sm" style={{ color: "var(--muted)" }}>
+        图片卡:尚未设置图片
+      </div>
+    );
+  }
   return (
     <CardLink href={card.href}>
       <div className="relative h-full w-full overflow-hidden" style={{ borderRadius: "inherit" }}>
@@ -63,7 +70,12 @@ export function ImageCard({
   );
 }
 
-export function PostCard({ post }: { post: PostCardData }) {
+/** 只依赖展示字段,/posts 卡片视图等处可用任意含这些字段的对象复用 */
+export function PostCard({
+  post,
+}: {
+  post: Pick<PostCardData, "slug" | "title" | "summary" | "coverUrl" | "updatedAt">;
+}) {
   return (
     <Link href={`/posts/${post.slug}`} className="block h-full">
       <div className="flex h-full flex-col overflow-hidden" style={{ borderRadius: "inherit" }}>
