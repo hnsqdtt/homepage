@@ -17,7 +17,9 @@ ENV APP_VERSION=$GIT_SHA \
     NEXT_PUBLIC_SITE_URL=$SITE_URL \
     DATA_DIR=/tmp/build-data \
     NEXT_TELEMETRY_DISABLED=1
-RUN pnpm build
+# 先单进程跑迁移建好空库,再 build:next 并行 worker 各自打开 DB 时迁移已就位,
+# 避免多进程同时 CREATE TABLE 的竞态
+RUN mkdir -p /tmp/build-data && pnpm drizzle-kit migrate && pnpm build
 
 FROM node:22-slim AS runner
 ENV NODE_ENV=production \
