@@ -1,0 +1,31 @@
+# 反向代理 + 静态直出(design/07);安全头统一在此追加(design/06)。
+linlang.me {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+	}
+
+	# 图片:内容 hash 命名,边缘与浏览器永久缓存
+	handle_path /uploads/* {
+		root * /srv/site-data/uploads
+		header Cache-Control "public, max-age=31536000, immutable"
+		file_server
+	}
+
+	# 备用静态区(design/03)
+	handle_path /pages/* {
+		root * /srv/site-data/pages
+		file_server
+	}
+
+	handle {
+		reverse_proxy app:3000
+	}
+}
+
+www.linlang.me {
+	redir https://linlang.me{uri} permanent
+}

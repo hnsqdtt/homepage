@@ -1,0 +1,127 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* 暗色模式:html.dark 手动切换,初始化脚本按 localStorage/系统偏好落 class */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 站点级 CSS 变量:主页配置(design/09)在渲染时覆盖这些值 */
+:root {
+  --accent: #7f77dd;
+  --page-max-width: 1200px;
+  --card-radius: 16px;
+  --card-border-width: 1px;
+  --card-opacity: 0.92;
+  --card-blur: 12px;
+  --title-size: 18px;
+  --title-weight: 600;
+
+  --bg: #f6f6f8;
+  --fg: #1a1a20;
+  --muted: #6b6b76;
+  --card-bg: 255 255 255;
+  --card-border: #e4e4ec;
+}
+
+.dark {
+  --bg: #101014;
+  --fg: #e8e8ee;
+  --muted: #9a9aa8;
+  --card-bg: 24 24 30;
+  --card-border: #2a2a34;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+/* 卡片基元:实心/毛玻璃两种质感由变量驱动(design/09 样式系统) */
+.card-surface {
+  border-radius: var(--card-radius);
+  border: var(--card-border-width) solid var(--card-border);
+  background: rgb(var(--card-bg) / var(--card-opacity));
+}
+.card-surface[data-surface="glass"] {
+  backdrop-filter: blur(var(--card-blur));
+  -webkit-backdrop-filter: blur(var(--card-blur));
+}
+.card-surface[data-shadow="soft"] {
+  box-shadow: 0 4px 24px rgb(0 0 0 / 0.06);
+}
+.dark .card-surface[data-shadow="soft"] {
+  box-shadow: 0 4px 24px rgb(0 0 0 / 0.35);
+}
+
+/* 卡片墙网格:桌面 12 列 → 平板 8 列 → 手机单列按 (y,x) 展开(design/04) */
+.card-wall {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(12, 1fr);
+  grid-auto-rows: 96px;
+  grid-auto-flow: row;
+}
+.card-wall > .wall-item {
+  grid-column: var(--gc-d);
+  grid-row: var(--gr-d);
+  order: var(--ord);
+}
+/* 平板:列宽等比缩放,但改用自动流按 order 放置,避免缩放取整导致的显式定位重叠 */
+@media (max-width: 1023px) {
+  .card-wall {
+    grid-template-columns: repeat(8, 1fr);
+  }
+  .card-wall > .wall-item {
+    grid-column: auto / span var(--w-t);
+    grid-row: auto / span var(--h);
+  }
+}
+@media (max-width: 639px) {
+  .card-wall {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+  .card-wall > .wall-item {
+    grid-column: 1 / -1;
+    grid-row: auto;
+    order: var(--ord);
+    min-height: 120px;
+  }
+}
+
+/* 卡片标题:全局主题变量驱动,单卡可覆盖 */
+.card-title {
+  font-size: var(--title-size);
+  font-weight: var(--title-weight);
+  color: var(--title-color, var(--fg));
+  line-height: 1.35;
+}
+
+/* 岛屿占位:组件加载前的外框;未注册名字显示友好提示 */
+.island-missing {
+  border: 1px dashed var(--card-border);
+  border-radius: 12px;
+  padding: 1rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+/* 文章正文:Shiki 双主题切换(亮色内联,暗色走 --shiki-dark 变量) */
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+.prose pre.shiki {
+  border-radius: 12px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+/* 块级公式过宽时横向滚动,不撑破排版 */
+.prose .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.25rem 0;
+}
+.prose img {
+  border-radius: 12px;
+}

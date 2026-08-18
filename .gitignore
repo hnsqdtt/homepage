@@ -9,6 +9,13 @@ data/
 .env.*
 !.env.example
 
+# 生成产物:KaTeX 自托管文件由 scripts/copy-katex.mjs 生成
+/public/katex/
+
+# TypeScript 构建缓存
+*.tsbuildinfo
+next-env.d.ts
+
 # 编辑器与系统
 .DS_Store
 *.log
