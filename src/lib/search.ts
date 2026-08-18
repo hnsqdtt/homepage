@@ -13,12 +13,33 @@ export interface SearchHit {
 
 const PAGE_SIZE = 20;
 
+function escHtml(s: string) {
+  return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
+
 export function searchPosts(q: string, tag?: string): SearchHit[] {
   const query = q.trim();
-  if (!query) return [];
+  // 纯标签筛选:无关键词时按标签列出
+  if (!query) return tag ? listByTag(tag) : [];
   // 长度按 Unicode 码点算,中文两字即回退 LIKE
   const usesFts = [...query].length >= 3;
   return usesFts ? searchFts(query, tag) : searchLike(query, tag);
+}
+
+function listByTag(tag: string): SearchHit[] {
+  const rows = db.all<{ slug: string; title: string; summary: string; updatedAt: number }>(sql`
+    SELECT slug, title, summary, updated_at AS updatedAt
+    FROM posts
+    WHERE status = 'published' AND tags LIKE ${"%" + JSON.stringify(tag) + "%"}
+    ORDER BY updated_at DESC
+    LIMIT ${PAGE_SIZE}
+  `);
+  return rows.map((r) => ({
+    slug: r.slug,
+    title: r.title,
+    snippet: escHtml(r.summary),
+    updatedAt: r.updatedAt,
+  }));
 }
 
 function searchFts(query: string, tag?: string): SearchHit[] {
@@ -59,12 +80,10 @@ function searchLike(query: string, tag?: string): SearchHit[] {
     const idx = source.indexOf(query);
     const start = Math.max(0, idx - 30);
     const raw = source.slice(start, start + 90);
-    const esc = (s: string) =>
-      s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
     const snippet =
       idx >= 0
-        ? esc(raw).replaceAll(esc(query), `<mark>${esc(query)}</mark>`)
-        : esc(r.summary.slice(0, 90));
+        ? escHtml(raw).replaceAll(escHtml(query), `<mark>${escHtml(query)}</mark>`)
+        : escHtml(r.summary.slice(0, 90));
     return { slug: r.slug, title: r.title, snippet: `${start > 0 ? "…" : ""}${snippet}…`, updatedAt: r.updatedAt };
   });
 }
