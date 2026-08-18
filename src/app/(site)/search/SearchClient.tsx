@@ -1,5 +1,6 @@
 "use client";
-// 搜索交互:输入防抖后请求 /api/search(design/04);结果含 <mark> 高亮摘录。
+// 搜索交互:输入防抖后请求 /api/search(design/04)。
+// 支持 `#标签` 语法(可多个,与关键词自由组合);?tag= 进入时转为 #标签 填入输入框。
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -13,8 +14,11 @@ interface Hit {
 
 export default function SearchClient() {
   const params = useSearchParams();
-  const [q, setQ] = useState(params.get("q") ?? "");
-  const [tag] = useState(params.get("tag") ?? "");
+  const [q, setQ] = useState(() => {
+    const tag = params.get("tag");
+    if (tag) return `#${tag} `;
+    return params.get("q") ?? "";
+  });
   const [hits, setHits] = useState<Hit[] | null>(null);
   const [loading, setLoading] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -22,22 +26,21 @@ export default function SearchClient() {
   useEffect(() => {
     clearTimeout(timer.current);
     const query = q.trim();
-    if (!query && !tag) {
+    if (!query) {
       setHits(null);
       return;
     }
     timer.current = setTimeout(async () => {
       setLoading(true);
       try {
-        const url = `/api/search?q=${encodeURIComponent(query)}${tag ? `&tag=${encodeURIComponent(tag)}` : ""}`;
-        const res = await fetch(url);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         if (res.ok) setHits((await res.json()).hits);
       } finally {
         setLoading(false);
       }
     }, 300);
     return () => clearTimeout(timer.current);
-  }, [q, tag]);
+  }, [q]);
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8">
@@ -46,18 +49,10 @@ export default function SearchClient() {
         autoFocus
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="搜索文章标题、正文…"
+        placeholder="搜索文章…(#标签 按标签筛选,可与关键词组合)"
         className="card-surface w-full px-4 py-3 outline-none"
         data-shadow="soft"
       />
-      {tag && (
-        <p className="mt-3 text-sm" style={{ color: "var(--muted)" }}>
-          标签筛选:{tag}{" "}
-          <Link href="/search" className="underline underline-offset-2">
-            清除
-          </Link>
-        </p>
-      )}
 
       <div className="mt-6 space-y-5">
         {loading && (
