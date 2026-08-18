@@ -20,6 +20,11 @@ ENV APP_VERSION=$GIT_SHA \
 # 先单进程跑迁移建好空库,再 build:next 并行 worker 各自打开 DB 时迁移已就位,
 # 避免多进程同时 CREATE TABLE 的竞态
 RUN mkdir -p /tmp/build-data && pnpm drizzle-kit migrate && pnpm build
+# 丢弃构建时(空库)预渲染的 ISR 初始缓存:standalone 对这批条目的后台再生不落盘,
+# 会让空首页一直被供应;删掉后首次请求按真实数据渲染并落盘
+RUN cd .next/standalone/.next/server/app \
+    && rm -f index.html index.rsc index.meta \
+       feed.xml.body feed.xml.meta sitemap.xml.body sitemap.xml.meta
 
 FROM node:22-slim AS runner
 ENV NODE_ENV=production \
