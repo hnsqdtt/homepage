@@ -4,6 +4,7 @@ import Link from "next/link";
 import type { HomepageConfig } from "@/lib/homepage-config";
 import type { SiteSettings } from "@/lib/site-settings";
 import ThemeToggle from "./ThemeToggle";
+import UserMenu from "./UserMenu";
 
 export default function SiteHeader({
   site,
@@ -43,6 +44,7 @@ export default function SiteHeader({
           </form>
         )}
         {header.showThemeToggle && <ThemeToggle />}
+        <UserMenu />
       </div>
     </header>
   );

@@ -2,6 +2,7 @@
 // 评论区:进入视口才 fetch,评论变化不触发文章页重渲染(design/04)。
 // 正文纯文本展示(保留换行,URL 自动成链),分页 20 条时间正序。
 import { useCallback, useEffect, useRef, useState } from "react";
+import { signIn } from "next-auth/react";
 
 interface CommentItem {
   id: number;
@@ -115,11 +116,6 @@ export default function Comments({ slug }: { slug: string }) {
     if (res.ok) await load(1);
   }
 
-  async function login() {
-    // 走 next-auth 登录页,回跳当前文章
-    location.href = `/api/auth/signin?callbackUrl=${encodeURIComponent(location.href)}`;
-  }
-
   const viewer = data?.viewer ?? null;
   const hasMore = data ? data.page * data.pageSize < data.total : false;
 
@@ -207,7 +203,7 @@ export default function Comments({ slug }: { slug: string }) {
             ) : (
               <button
                 type="button"
-                onClick={login}
+                onClick={() => signIn("github")}
                 className="rounded-lg px-4 py-2 text-sm font-medium text-white"
                 style={{ background: "var(--accent)" }}
               >
