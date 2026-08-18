@@ -42,6 +42,8 @@ services:
       - WATCHTOWER_HTTP_API_TOKEN=${WATCHTOWER_TOKEN}
       - WATCHTOWER_LABEL_ENABLE=true
       - WATCHTOWER_CLEANUP=true
+      # 1.7.1 默认协商到过老的 API 版本,新版 Docker 守护进程(min 1.40)会拒绝;固定一个兼容值
+      - DOCKER_API_VERSION=1.44
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     mem_limit: 64m
