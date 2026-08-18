@@ -26,6 +26,7 @@ linlang.me {
 	}
 }
 
-www.linlang.me {
-	redir https://linlang.me{uri} permanent
-}
+# 需要 www 时:Cloudflare 加 CNAME www → linlang.me 后取消本段注释
+# www.linlang.me {
+# 	redir https://linlang.me{uri} permanent
+# }
