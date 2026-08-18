@@ -1,4 +1,4 @@
-# 生产编排(design/07):Caddy + app 两个容器;可变数据只在 ./data。
+# 生产编排(design/07):Caddy + app + watchtower 三个容器;可变数据只在 ./data。
 services:
   app:
     image: ghcr.io/hnsqdtt/homepage:latest
@@ -9,6 +9,9 @@ services:
     volumes:
       - ./data:/data
     mem_limit: 768m
+    labels:
+      # 一键更新只圈定本容器(watchtower LABEL_ENABLE 模式)
+      - com.centurylinklabs.watchtower.enable=true
     healthcheck:
       # slim 镜像无 curl,用 node 自带 fetch 探测
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
@@ -28,6 +31,20 @@ services:
       - ./data:/srv/site-data:ro # 只读挂载,直接伺服 uploads 与 pages
       - caddy_data:/data # Caddy 证书存储
       - caddy_config:/config
+
+  # 一键更新执行器(design/05 健康页):HTTP API 触发模式(不定时轮询),
+  # 只更新打了标签的容器;不映射端口,仅 compose 内网可达,经 WATCHTOWER_TOKEN 鉴权
+  watchtower:
+    image: containrrr/watchtower:1.7.1
+    restart: unless-stopped
+    environment:
+      - WATCHTOWER_HTTP_API_UPDATE=true
+      - WATCHTOWER_HTTP_API_TOKEN=${WATCHTOWER_TOKEN}
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_CLEANUP=true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    mem_limit: 64m
 
 volumes:
   caddy_data: {}

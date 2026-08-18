@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { countPublished } from "@/lib/data";
 import { APP_VERSION, DATA_DIR, UPLOADS_DIR } from "@/lib/env";
 import ReindexButton from "./ReindexButton";
+import UpdateChecker from "./UpdateChecker";
 
 type Level = "ok" | "warn" | "fail";
 
@@ -135,6 +136,7 @@ export default function HealthPage() {
     <div className="max-w-2xl">
       <h1 className="mb-5 text-xl font-semibold">系统自检</h1>
       <div className="space-y-6">
+        <UpdateChecker />
         {groups.map((g) => (
           <section key={g.title}>
             <h2 className="mb-2 text-sm font-medium" style={{ color: "var(--muted)" }}>
