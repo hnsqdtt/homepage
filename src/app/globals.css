@@ -96,8 +96,24 @@ body {
   line-height: 1.35;
 }
 
-/* 岛屿占位:组件加载前的外框;未注册名字显示友好提示 */
-.island-missing {
+/* 岛屿占位:挂载前给出可见的加载态外框,防布局跳动;未注册名字显示友好提示 */
+.island-slot:not([data-mounted]) {
+  min-height: 72px;
+  border: 1px dashed var(--card-border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.island-slot:not([data-mounted], .island-missing)::before {
+  content: "交互组件,滚动到此处加载…";
+}
+.island-missing:not([data-mounted])::before {
+  content: "组件未注册";
+}
+.island-missing[data-mounted] {
   border: 1px dashed var(--card-border);
   border-radius: 12px;
   padding: 1rem;
