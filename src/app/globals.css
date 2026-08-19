@@ -169,3 +169,7 @@ body {
 .prose img {
   border-radius: 12px;
 }
+/* 目录跳转落点留白(TocNav 平滑滚动) */
+.prose :is(h1, h2, h3, h4) {
+  scroll-margin-top: 1.25rem;
+}
