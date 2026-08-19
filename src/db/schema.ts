@@ -51,6 +51,27 @@ export const settings = sqliteTable("settings", {
   value: text("value").notNull(),
 });
 
+export const assets = sqliteTable(
+  "assets",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    // /uploads/YYYY/MM/<hash>.<ext>;内容 hash 命名,URL 即资产的稳定标识
+    url: text("url").notNull().unique(),
+    kind: text("kind", { enum: ["image", "file"] }).notNull(),
+    mime: text("mime").notNull(),
+    // 展示名(默认原文件名),图库搜索按此字段
+    name: text("name").notNull(),
+    // 单层逻辑分类,NULL = 未分类;只改标签不动文件,既有引用永不断
+    folder: text("folder"),
+    // 图片专属
+    width: integer("width"),
+    height: integer("height"),
+    size: integer("size").notNull(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (t) => [index("idx_assets_folder").on(t.folder)],
+);
+
 export const homepageConfigs = sqliteTable("homepage_configs", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
@@ -63,3 +84,4 @@ export const homepageConfigs = sqliteTable("homepage_configs", {
 export type PostRow = typeof posts.$inferSelect;
 export type CommentRow = typeof comments.$inferSelect;
 export type HomepageConfigRow = typeof homepageConfigs.$inferSelect;
+export type AssetRow = typeof assets.$inferSelect;

@@ -13,7 +13,7 @@ import {
   Section,
   SelectField,
   TextField,
-  UploadButton,
+  AssetField,
 } from "./ui";
 
 const str = (v: unknown, d = "") => (typeof v === "string" ? v : d);
@@ -186,16 +186,10 @@ export default function GlobalForm({
         {bg.engine === "image" && (
           <>
             <Row label="图片">
-              <span className="flex gap-2">
-                <TextField value={str(p.url)} onChange={(v) => setParam("url", v)} placeholder="/uploads/…" />
-                <UploadButton onDone={(u) => setParam("url", u)} />
-              </span>
+              <AssetField value={str(p.url)} onChange={(v) => setParam("url", v)} placeholder="/uploads/…" />
             </Row>
             <Row label="暗色图">
-              <span className="flex gap-2">
-                <TextField value={str(p.darkUrl)} onChange={(v) => setParam("darkUrl", v)} placeholder="留空共用上图" />
-                <UploadButton onDone={(u) => setParam("darkUrl", u)} />
-              </span>
+              <AssetField value={str(p.darkUrl)} onChange={(v) => setParam("darkUrl", v)} placeholder="留空共用上图" />
             </Row>
           </>
         )}

@@ -1,6 +1,7 @@
 "use client";
 // 编辑器基础控件:统一样式的小输入组件,让各表单文件聚焦业务字段。
-import { useRef, useState } from "react";
+import { useState } from "react";
+import AssetPicker from "@/components/admin/AssetPicker";
 
 export const inputCls = "card-surface w-full px-2.5 py-1.5 text-sm outline-none";
 
@@ -194,45 +195,38 @@ export function ColorField({ value, onChange }: { value: string; onChange: (v: s
   );
 }
 
-/** 图片上传按钮:走 /api/admin/upload,成功后回填 URL */
-export function UploadButton({ onDone }: { onDone: (url: string) => void }) {
-  const ref = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-  async function pick(file: File) {
-    setBusy(true);
-    try {
-      const fd = new FormData();
-      fd.set("file", file);
-      const res = await fetch("/api/admin/upload", { method: "POST", body: fd });
-      const j = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
-      if (res.ok && j.url) onDone(j.url);
-      else alert(j.error ?? "上传失败");
-    } finally {
-      setBusy(false);
-    }
-  }
+/** 图片资产字段:URL 文本输入 + 资产库选择(选择器内可就地上传) */
+export function AssetField({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
   return (
-    <>
+    <span className="flex gap-2">
+      <TextField value={value} onChange={onChange} placeholder={placeholder} />
       <button
         type="button"
-        onClick={() => ref.current?.click()}
-        disabled={busy}
+        onClick={() => setOpen(true)}
         className="card-surface shrink-0 px-2.5 py-1.5 text-sm hover:opacity-80"
         data-shadow="none"
       >
-        {busy ? "上传中…" : "上传"}
+        选择
       </button>
-      <input
-        ref={ref}
-        type="file"
-        accept="image/*"
-        hidden
-        onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) void pick(f);
-          e.target.value = "";
-        }}
-      />
-    </>
+      {open && (
+        <AssetPicker
+          kind="image"
+          onClose={() => setOpen(false)}
+          onSelect={(a) => {
+            onChange(a.url);
+            setOpen(false);
+          }}
+        />
+      )}
+    </span>
   );
 }

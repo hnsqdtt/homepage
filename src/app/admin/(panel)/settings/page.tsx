@@ -1,6 +1,7 @@
 // 站点设置:标题/名字/bio/头像/社交链接/页脚(settings.site)。
 "use client";
 import { useEffect, useState } from "react";
+import AssetPicker from "@/components/admin/AssetPicker";
 
 interface Social {
   kind: string;
@@ -22,6 +23,7 @@ export default function SettingsPage() {
   const [form, setForm] = useState<SiteForm | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     void (async () => {
@@ -68,8 +70,18 @@ export default function SettingsPage() {
           <textarea value={form.bio} onChange={(e) => patch({ bio: e.target.value })} rows={2} className={`${inputCls} mt-1 resize-y`} data-shadow="none" />
         </label>
         <label className="block text-sm">
-          <span style={{ color: "var(--muted)" }}>头像 URL(可先到图库上传)</span>
-          <input value={form.avatarUrl} onChange={(e) => patch({ avatarUrl: e.target.value })} className={`${inputCls} mt-1`} data-shadow="none" />
+          <span style={{ color: "var(--muted)" }}>头像 URL(可从资产库选择)</span>
+          <span className="mt-1 flex gap-2">
+            <input value={form.avatarUrl} onChange={(e) => patch({ avatarUrl: e.target.value })} className={inputCls} data-shadow="none" />
+            <button
+              type="button"
+              onClick={() => setPickerOpen(true)}
+              className="shrink-0 rounded-lg border px-3 py-2 text-sm"
+              style={{ borderColor: "var(--card-border)" }}
+            >
+              选择
+            </button>
+          </span>
         </label>
 
         <div className="text-sm">
@@ -135,6 +147,17 @@ export default function SettingsPage() {
           </span>
         </div>
       </div>
+
+      {pickerOpen && (
+        <AssetPicker
+          kind="image"
+          onClose={() => setPickerOpen(false)}
+          onSelect={(a) => {
+            patch({ avatarUrl: a.url });
+            setPickerOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

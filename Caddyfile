@@ -8,10 +8,13 @@ linlang.me {
 		Referrer-Policy "strict-origin-when-cross-origin"
 	}
 
-	# 图片:内容 hash 命名,边缘与浏览器永久缓存
+	# 资产文件:内容 hash 命名,边缘与浏览器永久缓存
 	handle_path /uploads/* {
 		root * /srv/site-data/uploads
 		header Cache-Control "public, max-age=31536000, immutable"
+		# svg 可内嵌脚本,sandbox 禁其执行(img/背景引用不受影响)
+		@svg path *.svg
+		header @svg Content-Security-Policy "sandbox"
 		file_server
 	}
 

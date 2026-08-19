@@ -11,7 +11,7 @@ import {
   Section,
   SelectField,
   TextField,
-  UploadButton,
+  AssetField,
   inputCls,
 } from "./ui";
 
@@ -123,10 +123,7 @@ function CarouselFields({
                   </button>
                 </span>
               </div>
-              <span className="flex gap-2">
-                <TextField value={s.image ?? ""} onChange={(v) => patchSlide(i, { image: v || undefined })} placeholder="图片 /uploads/…(可空)" />
-                <UploadButton onDone={(url) => patchSlide(i, { image: url })} />
-              </span>
+              <AssetField value={s.image ?? ""} onChange={(v) => patchSlide(i, { image: v || undefined })} placeholder="图片 /uploads/…(可空)" />
               <TextField value={s.title} onChange={(v) => patchSlide(i, { title: v })} placeholder="标题" />
               <TextField value={s.text ?? ""} onChange={(v) => patchSlide(i, { text: v || undefined })} placeholder="说明(可空)" />
               <TextField value={s.href ?? ""} onChange={(v) => patchSlide(i, { href: v || undefined })} placeholder="链接(可空)" />
@@ -236,10 +233,7 @@ export default function CardForm({
         {card.type === "image" && (
           <>
             <Row label="图片">
-              <span className="flex gap-2">
-                <TextField value={card.src} onChange={(v) => setCard({ ...card, src: v })} placeholder="/uploads/…" />
-                <UploadButton onDone={(url) => setCard({ ...card, src: url })} />
-              </span>
+              <AssetField value={card.src} onChange={(v) => setCard({ ...card, src: v })} placeholder="/uploads/…" />
             </Row>
             <Row label="压图标题">
               <TextField value={card.title ?? ""} onChange={(v) => setCard({ ...card, title: v || undefined })} />

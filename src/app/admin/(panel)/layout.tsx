@@ -9,7 +9,7 @@ const NAV = [
   { href: "/admin/posts", label: "文章" },
   { href: "/admin/comments", label: "评论" },
   { href: "/admin/homepage", label: "主页" },
-  { href: "/admin/uploads", label: "图库" },
+  { href: "/admin/assets", label: "资产" },
   { href: "/admin/settings", label: "设置" },
   { href: "/admin/health", label: "自检" },
   { href: "/admin/export", label: "导出" },
