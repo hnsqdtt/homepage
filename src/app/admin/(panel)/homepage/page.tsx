@@ -1,9 +1,8 @@
 "use client";
-// 主页配置方案列表(design/09):新建(复制启用中方案)→ 进可视化编辑器;预览 / 启用 / 删除。
+// 主页配置方案列表(design/09):新建 = 进入未落库草稿(编辑器内首次保存才创建);
+// 预览 / 启用 / 删除。
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { DEFAULT_HOMEPAGE_CONFIG } from "@/lib/homepage-config";
 
 interface ConfigRow {
   id: number;
@@ -14,9 +13,7 @@ interface ConfigRow {
 }
 
 export default function HomepageConfigPage() {
-  const router = useRouter();
   const [configs, setConfigs] = useState<ConfigRow[]>([]);
-  const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/homepage-configs");
@@ -26,25 +23,6 @@ export default function HomepageConfigPage() {
   useEffect(() => {
     void load();
   }, [load]);
-
-  async function createNew() {
-    setBusy(true);
-    try {
-      // 新方案基于启用中方案复制,便于在现状上迭代;没有则用内置默认
-      const active = configs.find((c) => c.isActive === 1);
-      const data = active ? JSON.parse(active.data) : DEFAULT_HOMEPAGE_CONFIG;
-      const res = await fetch("/api/admin/homepage-configs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: `新方案 ${new Date().toLocaleDateString("zh-CN")}`, data }),
-      });
-      const j = (await res.json().catch(() => ({}))) as { id?: number; error?: string };
-      if (res.ok && j.id) router.push(`/admin/homepage/edit/${j.id}`);
-      else alert(j.error ?? "创建失败");
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function activate(id: number) {
     await fetch(`/api/admin/homepage-configs/${id}/activate`, { method: "POST" });
@@ -62,17 +40,15 @@ export default function HomepageConfigPage() {
     <div>
       <div className="mb-5 flex flex-wrap items-center gap-4">
         <h1 className="text-xl font-semibold">主页配置方案</h1>
-        <button
-          type="button"
-          onClick={() => void createNew()}
-          disabled={busy}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+        <Link
+          href="/admin/homepage/edit/new"
+          className="rounded-lg px-4 py-2 text-sm font-medium text-white"
           style={{ background: "var(--accent)" }}
         >
-          {busy ? "创建中…" : "新建方案"}
-        </button>
+          新建方案
+        </Link>
         <span className="text-sm" style={{ color: "var(--muted)" }}>
-          新方案复制启用中方案;没有启用方案时游客端显示内置默认主页
+          新方案复制启用中方案,保存后才会创建;没有启用方案时游客端显示内置默认主页
         </span>
       </div>
 

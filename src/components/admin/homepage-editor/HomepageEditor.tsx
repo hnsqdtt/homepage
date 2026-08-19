@@ -21,7 +21,8 @@ import GlobalForm from "./GlobalForm";
 const accentBtn = "rounded-lg px-4 py-1.5 text-sm font-medium text-white disabled:opacity-60";
 const plainBtn = "card-surface px-3 py-1.5 text-sm hover:opacity-80";
 
-export default function HomepageEditor({ configId }: { configId: number }) {
+/** configId 为 null 表示新建草稿:复制启用中方案编辑,首次保存才落库 */
+export default function HomepageEditor({ configId }: { configId: number | null }) {
   const router = useRouter();
   const [meta, setMeta] = useState<{ isActive: boolean } | null>(null);
   const [name, setName] = useState("");
@@ -34,10 +35,31 @@ export default function HomepageEditor({ configId }: { configId: number }) {
   const [loadErr, setLoadErr] = useState("");
   const [showDots, setShowDots] = useState(true);
 
-  // 载入方案
+  // 载入方案;新建草稿则复制启用中方案(没有就用内置默认),不落库
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (configId === null) {
+        const res = await fetch("/api/admin/homepage-configs");
+        if (cancelled) return;
+        let data = DEFAULT_HOMEPAGE_CONFIG;
+        if (res.ok) {
+          const j = (await res.json()) as { configs: { data: string; isActive: number }[] };
+          const active = j.configs.find((c) => c.isActive === 1);
+          if (active) {
+            const parsed = homepageConfigSchema.safeParse(JSON.parse(active.data));
+            if (parsed.success) data = parsed.data;
+          }
+        }
+        setMeta({ isActive: false });
+        setName(`新方案 ${new Date().toLocaleDateString("zh-CN")}`);
+        setConfig(data);
+        return;
+      }
+      if (!Number.isInteger(configId)) {
+        setLoadErr("方案不存在");
+        return;
+      }
       const res = await fetch(`/api/admin/homepage-configs/${configId}`);
       if (!res.ok) {
         if (!cancelled) setLoadErr("方案不存在");
@@ -97,31 +119,41 @@ export default function HomepageEditor({ configId }: { configId: number }) {
     return () => window.removeEventListener("beforeunload", handler);
   }, [dirty]);
 
-  async function save(): Promise<boolean> {
-    if (!config) return false;
+  /** 保存并返回方案 id(失败 null);新建草稿首存走 POST 创建,再跳到正式编辑地址 */
+  async function save(): Promise<number | null> {
+    if (!config) return null;
     setSaving(true);
     try {
-      const res = await fetch(`/api/admin/homepage-configs/${configId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, data: config }),
-      });
-      const j = (await res.json().catch(() => ({}))) as { error?: string };
+      const isNew = configId === null;
+      const res = await fetch(
+        isNew ? "/api/admin/homepage-configs" : `/api/admin/homepage-configs/${configId}`,
+        {
+          method: isNew ? "POST" : "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, data: config }),
+        },
+      );
+      const j = (await res.json().catch(() => ({}))) as { id?: number; error?: string };
       if (!res.ok) {
         setMsg(j.error ?? "保存失败");
-        return false;
+        return null;
       }
       setDirty(false);
+      if (isNew) {
+        if (!j.id) return null;
+        router.replace(`/admin/homepage/edit/${j.id}`);
+        return j.id;
+      }
       setMsg(meta?.isActive ? "已保存,线上已生效" : "已保存");
-      return true;
+      return configId;
     } finally {
       setSaving(false);
     }
   }
 
   async function preview() {
-    if (dirty && !(await save())) return;
-    window.open(`/admin/preview/${configId}`, "_blank");
+    const id = dirty || configId === null ? await save() : configId;
+    if (id !== null) window.open(`/admin/preview/${id}`, "_blank");
   }
 
   /** 当前草稿存成新方案并跳去编辑它,原方案保持保存前的样子 */
@@ -145,8 +177,9 @@ export default function HomepageEditor({ configId }: { configId: number }) {
 
   async function activate() {
     if (!confirm("启用该方案?线上首页将立即切换。")) return;
-    if (dirty && !(await save())) return;
-    const res = await fetch(`/api/admin/homepage-configs/${configId}/activate`, { method: "POST" });
+    const id = dirty || configId === null ? await save() : configId;
+    if (id === null) return;
+    const res = await fetch(`/api/admin/homepage-configs/${id}/activate`, { method: "POST" });
     if (res.ok) {
       setMeta({ isActive: true });
       setMsg("已启用");
@@ -212,7 +245,15 @@ export default function HomepageEditor({ configId }: { configId: number }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="mb-4 flex shrink-0 flex-wrap items-center gap-3">
-        <Link href="/admin/homepage" className="text-sm hover:opacity-75" style={{ color: "var(--muted)" }}>
+        <Link
+          href="/admin/homepage"
+          onClick={(e) => {
+            // SPA 内导航不触发 beforeunload,这里补一道未保存确认
+            if (dirty && !confirm("有未保存改动,确定离开?")) e.preventDefault();
+          }}
+          className="text-sm hover:opacity-75"
+          style={{ color: "var(--muted)" }}
+        >
           ← 方案列表
         </Link>
         <input
@@ -252,9 +293,11 @@ export default function HomepageEditor({ configId }: { configId: number }) {
         <button type="button" onClick={() => void preview()} className={plainBtn} data-shadow="none">
           预览
         </button>
-        <button type="button" onClick={() => void saveAs()} className={plainBtn} data-shadow="none">
-          另存为
-        </button>
+        {configId !== null && (
+          <button type="button" onClick={() => void saveAs()} className={plainBtn} data-shadow="none">
+            另存为
+          </button>
+        )}
         {meta && !meta.isActive && (
           <button type="button" onClick={() => void activate()} className={plainBtn} data-shadow="none">
             启用
