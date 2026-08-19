@@ -24,6 +24,7 @@ export default async function EditPostPage({
         contentMd: post.contentMd,
         tags: JSON.parse(post.tags) as string[],
         status: post.status,
+        createdAt: post.createdAt,
       }}
     />
   );

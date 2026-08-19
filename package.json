@@ -15,6 +15,7 @@
     "@codemirror/lang-markdown": "^6.3.2",
     "@codemirror/language-data": "^6.5.1",
     "@shikijs/rehype": "^3.7.0",
+    "@uiw/codemirror-theme-vscode": "^4.25.11",
     "@uiw/react-codemirror": "^4.23.13",
     "archiver": "^7.0.1",
     "better-sqlite3": "^12.2.0",

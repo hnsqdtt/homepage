@@ -17,6 +17,8 @@ export const postInputSchema = z.object({
   contentMd: z.string().default(""),
   tags: z.array(z.string().min(1).max(40)).max(20).default([]),
   status: z.enum(["draft", "published"]),
+  // 可选:导入旧文时保留原文日期(Unix 秒)
+  createdAt: z.number().int().positive().optional(),
 });
 
 export type PostInput = z.infer<typeof postInputSchema>;
@@ -54,7 +56,7 @@ export async function createPost(input: PostInput): Promise<PostRow> {
       needsKatex: r.needsKatex ? 1 : 0,
       tags: JSON.stringify(input.tags),
       status: input.status,
-      createdAt: t,
+      createdAt: input.createdAt ?? t,
       updatedAt: t,
     })
     .returning()
@@ -86,6 +88,7 @@ export async function updatePost(id: number, input: PostInput): Promise<PostRow>
       needsKatex: r.needsKatex ? 1 : 0,
       tags: JSON.stringify(input.tags),
       status: input.status,
+      ...(input.createdAt ? { createdAt: input.createdAt } : {}),
       updatedAt: now(),
     })
     .where(eq(posts.id, id))
