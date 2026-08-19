@@ -4,6 +4,10 @@ import { auth } from "@/auth";
 import { jsonError } from "./api-utils";
 
 export async function requireAdmin() {
+  // 本地开发旁路:与 middleware 同一开关(仅 development 构建可达,生产无效)
+  if (process.env.NODE_ENV === "development" && process.env.DEV_ADMIN === "1") {
+    return { session: null, deny: null } as const;
+  }
   const session = await auth();
   if (!session?.isAdmin) {
     return { session: null, deny: jsonError("Not Found", 404) } as const;

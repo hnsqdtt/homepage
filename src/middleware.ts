@@ -3,6 +3,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
 export default auth((req) => {
+  // 本地开发旁路:DEV_ADMIN=1 时免登录进管理台(仅 development 构建可达,生产无效)
+  if (process.env.NODE_ENV === "development" && process.env.DEV_ADMIN === "1") {
+    return NextResponse.next();
+  }
   if (req.auth?.githubId && req.auth.githubId === process.env.ADMIN_GITHUB_ID) {
     return NextResponse.next();
   }
