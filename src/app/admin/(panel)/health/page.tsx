@@ -111,6 +111,14 @@ function backupCheck(): CheckItem {
 
 function resourceCheck(): CheckItem {
   const rssMb = process.memoryUsage().rss / 1024 / 1024;
+  // 预算(design/08)只对生产进程有意义;dev 含编译器与热更新缓存,不作对照
+  if (process.env.NODE_ENV !== "production") {
+    return {
+      label: "进程内存(RSS)",
+      level: "ok",
+      detail: `${rssMb.toFixed(0)} MB(dev 模式含编译器驻留,预算仅对生产生效)`,
+    };
+  }
   return {
     label: "进程内存(RSS)",
     level: rssMb < 350 ? "ok" : rssMb < 600 ? "warn" : "fail",
