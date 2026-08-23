@@ -1,4 +1,5 @@
-# 生产编排(design/07):Caddy + app + watchtower 三个容器;可变数据只在 ./data。
+# 生产编排(design/07):app + watchtower 两个容器;可变数据只在 ./data。
+# 80/443 归宿主机 Caddy(整机网关,import 本目录 Caddyfile),app 仅对回环暴露 3000。
 services:
   app:
     image: ghcr.io/hnsqdtt/homepage:latest
@@ -6,6 +7,8 @@ services:
     env_file: .env
     environment:
       - DATA_DIR=/data
+    ports:
+      - "127.0.0.1:3000:3000"
     volumes:
       - ./data:/data
     mem_limit: 768m
@@ -19,18 +22,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
-
-  caddy:
-    image: caddy:2-alpine
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./data:/srv/site-data:ro # 只读挂载,直接伺服 uploads 与 pages
-      - caddy_data:/data # Caddy 证书存储
-      - caddy_config:/config
 
   # 一键更新执行器(design/05 健康页):HTTP API 触发模式(不定时轮询),
   # 只更新打了标签的容器;不映射端口,仅 compose 内网可达,经 WATCHTOWER_TOKEN 鉴权
@@ -47,7 +38,3 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     mem_limit: 64m
-
-volumes:
-  caddy_data: {}
-  caddy_config: {}

@@ -1,4 +1,6 @@
-# 反向代理 + 静态直出(design/07);安全头统一在此追加(design/06)。
+# 站点路由段:宿主机 Caddy 经 /etc/caddy/Caddyfile 的 import 加载(design/07);
+# 服务器 80/443 由宿主机 Caddy 统一网关(与 mailer 等其他服务共用),本文件只管本站。
+# 安全头统一在此追加(design/06)。同步方式:scp 到 /opt/homepage/ 后 systemctl reload caddy。
 linlang.me {
 	encode zstd gzip
 
@@ -10,7 +12,7 @@ linlang.me {
 
 	# 资产文件:内容 hash 命名,边缘与浏览器永久缓存
 	handle_path /uploads/* {
-		root * /srv/site-data/uploads
+		root * /opt/homepage/data/uploads
 		header Cache-Control "public, max-age=31536000, immutable"
 		# svg 可内嵌脚本,sandbox 禁其执行(img/背景引用不受影响)
 		@svg path *.svg
@@ -20,12 +22,12 @@ linlang.me {
 
 	# 备用静态区(design/03)
 	handle_path /pages/* {
-		root * /srv/site-data/pages
+		root * /opt/homepage/data/pages
 		file_server
 	}
 
 	handle {
-		reverse_proxy app:3000
+		reverse_proxy 127.0.0.1:3000
 	}
 }
 

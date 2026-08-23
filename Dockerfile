@@ -34,7 +34,8 @@ ENV NODE_ENV=production \
     HOSTNAME=0.0.0.0
 WORKDIR /app
 
-RUN groupadd -r app && useradd -r -g app -d /app app \
+# uid/gid 固定 999:宿主机 data/ 目录按此 chown(setup 脚本),不随基础镜像漂移
+RUN groupadd -r -g 999 app && useradd -r -u 999 -g app -d /app app \
     && mkdir -p /data && chown app:app /data
 
 COPY --from=builder --chown=app:app /app/.next/standalone ./
